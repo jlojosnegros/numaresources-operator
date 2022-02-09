@@ -55,20 +55,22 @@ var _ = Describe("[Scheduler] install", func() {
 				updatedNROObj := &nropv1alpha1.NUMAResourcesScheduler{}
 				err := e2eclient.Client.Get(context.TODO(), client.ObjectKeyFromObject(nroSchedObj), updatedNROObj)
 				if err != nil {
-					klog.Warningf("failed to get the RTE resource: %v", err)
+					klog.Warningf("failed to get the NRScheduler resource: %v", err)
 					return false
 				}
 
+				klog.Warningf("jlom: conditions : %v", updatedNROObj.Status.Conditions)
 				cond := status.FindCondition(updatedNROObj.Status.Conditions, status.ConditionAvailable)
 				if cond == nil {
 					klog.Warningf("missing conditions in %v", updatedNROObj)
 					return false
 				}
+				klog.Warningf("jlom: condition found : %v", cond)
 
 				klog.Infof("condition: %v", cond)
 
 				return cond.Status == metav1.ConditionTrue
-			}, 5*time.Minute, 10*time.Second).Should(BeTrue(), "RTE condition did not become available")
+			}, 5*time.Minute, 10*time.Second).Should(BeTrue(), "NRScheduler condition did not become available")
 
 			err = e2eclient.Client.Get(context.TODO(), client.ObjectKeyFromObject(nroSchedObj), nroSchedObj)
 			Expect(err).NotTo(HaveOccurred())
