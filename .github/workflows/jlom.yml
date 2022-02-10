@@ -48,6 +48,9 @@ jobs:
     - name: Deploy RTE Operator
       run: |
         IMG=${built_image} KUSTOMIZE_DEPLOY_DIR="config/kind-ci/" make deploy
+    
+    - name : Setup upterm session
+      uses: lhotari/action-upterm@v1
 
     - name: E2E Tests
       run: |
