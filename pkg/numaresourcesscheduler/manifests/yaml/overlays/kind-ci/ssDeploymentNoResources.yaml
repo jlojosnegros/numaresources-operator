@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: "secondary-scheduler"
+  namespace: placeholder
+spec:
+  template:
+    spec:
+      containers:
+        - name: "secondary-scheduler"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "500Mi"
+            $patch: delete
