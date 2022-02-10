@@ -45,6 +45,11 @@ jobs:
         kubectl label node kind-worker node-role.kubernetes.io/worker=''
         kind load docker-image ${built_image}
 
+    - name: Modify NR Scheduler deployment resources
+      uses: mikefarah/yq@master
+      with:
+        cmd: yq -i 'del(.spec.template.spec.containers[select(.spec.template.containers[].name=="secondary-scheduler")].resources.requests)' 'pkg/numaresourcesscheduler/manifests/yaml/deployment.yaml'
+        
     - name: Deploy RTE Operator
       run: |
         IMG=${built_image} KUSTOMIZE_DEPLOY_DIR="config/kind-ci/" make deploy
