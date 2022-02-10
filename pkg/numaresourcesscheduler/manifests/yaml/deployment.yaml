@@ -24,6 +24,11 @@ spec:
               - matchExpressions:
                   - key: node-role.kubernetes.io/master
                     operator: Exists
+      volumes:
+        - name: "etckubernetes"
+          configMap:
+            name: ${CONFIGMAP}
+      restartPolicy: "Always"
       containers:
         - name: "secondary-scheduler"
           image: ${IMAGE}
@@ -38,12 +43,8 @@ spec:
           volumeMounts:
             - mountPath: "/etc/kubernetes"
               name: "etckubernetes"
-      restartPolicy: "Always"
       serviceAccountName: "secondary-scheduler"
       tolerations:
         - effect: NoSchedule
           key: node-role.kubernetes.io/master
-      volumes:
-        - name: "etckubernetes"
-          configMap:
-            name: ${CONFIGMAP}
+
