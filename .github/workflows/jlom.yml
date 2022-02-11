@@ -65,6 +65,7 @@ jobs:
         NO_TEARDOWN=true make test-e2e
 
     - name : Setup upterm session
+      if: ${{ failure() }}
       uses: lhotari/action-upterm@v1
 
     - name: Export E2E Tests logs

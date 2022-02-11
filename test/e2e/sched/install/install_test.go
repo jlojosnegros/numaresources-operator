@@ -30,6 +30,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	nropv1alpha1 "github.com/openshift-kni/numaresources-operator/api/numaresourcesoperator/v1alpha1"
+	"github.com/openshift-kni/numaresources-operator/pkg/numaresourcesscheduler/manifests"
 	"github.com/openshift-kni/numaresources-operator/pkg/status"
 	schedutils "github.com/openshift-kni/numaresources-operator/test/e2e/sched/utils"
 	e2eclient "github.com/openshift-kni/numaresources-operator/test/utils/clients"
@@ -40,6 +41,11 @@ import (
 var _ = Describe("[Scheduler] install", func() {
 	Context("with a running cluster with all the components", func() {
 		It("[test_id: 48598] should perform the scheduler deployment and verify the condition is reported as available", func() {
+
+			dpl, errr := manifests.Deployment("")
+			Expect(errr).NotTo(HaveOccurred())
+			klog.Warningf("jlom: Containers %v", dpl.Spec.Template.Spec.Containers)
+
 			var err error
 			nroSchedObj := objects.TestNROScheduler()
 
