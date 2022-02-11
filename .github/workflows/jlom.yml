@@ -46,9 +46,16 @@ jobs:
         kind load docker-image ${built_image}
 
     - name: Modify NR Scheduler deployment resources
+      id: yqModifyNROSchedDeployment
       uses: mikefarah/yq@master
       with:
-        cmd: yq -i 'del(.spec.template.spec.containers[select(.spec.template.containers[].name=="secondary-scheduler")].resources.requests)' 'pkg/numaresourcesscheduler/manifests/yaml/deployment.yaml'
+        cmd: yq eval 'del(.spec.template.spec.containers[select(.spec.template.containers[].name=="secondary-scheduler")].resources.requests)' 'pkg/numaresourcesscheduler/manifests/yaml/deployment.yaml'
+    - name: show yq result
+      run: echo Result is ${{ steps.yqModifyNROSchedDeployment.outputs.result }}
+    - name: Move result into deployment manifest
+      run: echo ${{ steps.yqModifyNROSchedDeployment.outputs.result }} > 'pkg/numaresourcesscheduler/manifests/yaml/deployment.yaml'
+    - name: Show deployment manifest
+      run: cat 'pkg/numaresourcesscheduler/manifests/yaml/deployment.yaml'
 
     - name: Deploy RTE Operator
       run: |
@@ -60,7 +67,7 @@ jobs:
         NO_TEARDOWN=true make test-e2e
 
     - name : Setup upterm session
-      uses: lhotari/action-upterm@v1        
+      uses: lhotari/action-upterm@v1
 
     - name: Export E2E Tests logs
       if: ${{ failure() }}

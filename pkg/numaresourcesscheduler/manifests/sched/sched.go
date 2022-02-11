@@ -20,6 +20,7 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
+	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/openshift-kni/numaresources-operator/pkg/numaresourcesscheduler/manifests"
@@ -89,6 +90,7 @@ func GetManifests(namespace string) (Manifests, error) {
 	if err != nil {
 		return mf, err
 	}
+	klog.Warningf("\njlom Deployemnt: %#v\n", mf.Deployment)
 
 	return mf, nil
 }
