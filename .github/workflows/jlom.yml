@@ -22,6 +22,15 @@ jobs:
       with:
         fetch-depth: 0 # Fetch all history for all tags and branches
 
+    - name: See Deployment Before
+      run: cat pkg/numaresourcesscheduler/manifests/yaml/deployment.yaml
+
+    - name: Modify Deployment
+      run: yq eval -i 'del(.spec.template.spec.containers[select(.spec.template.containers[].name=="secondary-scheduler")].resources.requests)' pkg/numaresourcesscheduler/manifests/yaml/deployment.yaml
+
+    - name: See Deployment After
+      run: cat pkg/numaresourcesscheduler/manifests/yaml/deployment.yaml
+
     - name: Set up golang
       uses: actions/setup-go@v2
       with:
@@ -45,13 +54,13 @@ jobs:
         kubectl label node kind-worker node-role.kubernetes.io/worker=''
         kind load docker-image ${built_image}
 
-    - name: Modify NR Scheduler deployment resources
-      id: yqModifyNROSchedDeployment
-      uses: mikefarah/yq@master
-      with:
-        cmd: yq eval 'del(.spec.template.spec.containers[select(.spec.template.containers[].name=="secondary-scheduler")].resources.requests)' 'pkg/numaresourcesscheduler/manifests/yaml/deployment.yaml'
-    - name: Move result into deployment manifest
-      run: echo "${{ steps.yqModifyNROSchedDeployment.outputs.result }}" > 'pkg/numaresourcesscheduler/manifests/yaml/deployment.yaml'
+    # - name: Modify NR Scheduler deployment resources
+    #   id: yqModifyNROSchedDeployment
+    #   uses: mikefarah/yq@master
+    #   with:
+    #     cmd: yq eval 'del(.spec.template.spec.containers[select(.spec.template.containers[].name=="secondary-scheduler")].resources.requests)' 'pkg/numaresourcesscheduler/manifests/yaml/deployment.yaml'
+    # - name: Move result into deployment manifest
+    #   run: echo "${{ steps.yqModifyNROSchedDeployment.outputs.result }}" > 'pkg/numaresourcesscheduler/manifests/yaml/deployment.yaml'
     
     
 
@@ -59,10 +68,16 @@ jobs:
       run: |
         IMG=${built_image} KUSTOMIZE_DEPLOY_DIR="config/kind-ci/" make deploy
 
+    - name: See Deployment Before tests
+      run: cat pkg/numaresourcesscheduler/manifests/yaml/deployment.yaml
+
     - name: E2E Tests
       run: |
         export KUBECONFIG=${HOME}/.kube/config
         NO_TEARDOWN=true make test-e2e
+
+    - name: See Deployment After
+      run: cat pkg/numaresourcesscheduler/manifests/yaml/deployment.yaml        
 
     - name : Setup upterm session
       if: ${{ failure() }}
