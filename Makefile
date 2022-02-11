@@ -125,6 +125,9 @@ test-e2e: build-e2e-all
 test-install-e2e: build-e2e-all
 	hack/run-test-install-e2e.sh
 
+test-sched-install-e2e: build-e2e-all
+	hack/run-test-sched-install-e2e.sh	
+
 ##@ Build
 
 binary: build-tools
