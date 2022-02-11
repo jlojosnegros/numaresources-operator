@@ -34,16 +34,16 @@ jobs:
       run: |
         make binary-e2e-rte binary-e2e-install binary-e2e-uninstall
 
-    - name: Build image
-      run: |
-        docker build . -t ${built_image}
+    # - name: Build image
+    #   run: |
+    #     docker build . -t ${built_image}
 
-    - name: Create K8s Kind Cluster
-      run: |
-        # kind is part of 20.04 image, see: https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-README.md
-        kind create cluster --config=hack/kind-config-e2e-no-registry.yaml --image kindest/node:v1.21.1@sha256:69860bda5563ac81e3c0057d654b5253219618a22ec3a346306239bba8cfa1a6
-        kubectl label node kind-worker node-role.kubernetes.io/worker=''
-        kind load docker-image ${built_image}
+    # - name: Create K8s Kind Cluster
+    #   run: |
+    #     # kind is part of 20.04 image, see: https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-README.md
+    #     kind create cluster --config=hack/kind-config-e2e-no-registry.yaml --image kindest/node:v1.21.1@sha256:69860bda5563ac81e3c0057d654b5253219618a22ec3a346306239bba8cfa1a6
+    #     kubectl label node kind-worker node-role.kubernetes.io/worker=''
+    #     kind load docker-image ${built_image}
 
     - name: Modify NR Scheduler deployment resources
       id: yqModifyNROSchedDeployment
@@ -51,49 +51,49 @@ jobs:
       with:
         cmd: yq eval 'del(.spec.template.spec.containers[select(.spec.template.containers[].name=="secondary-scheduler")].resources.requests)' 'pkg/numaresourcesscheduler/manifests/yaml/deployment.yaml'
     - name: show yq result
-      run: echo Result is ${{ steps.yqModifyNROSchedDeployment.outputs.result }}
+      run: echo  " ${{ steps.yqModifyNROSchedDeployment.outputs.result }} "
     - name: Move result into deployment manifest
-      run: echo ${{ steps.yqModifyNROSchedDeployment.outputs.result }} > 'pkg/numaresourcesscheduler/manifests/yaml/deployment.yaml'
+      run: echo "${{ steps.yqModifyNROSchedDeployment.outputs.result }}" > 'pkg/numaresourcesscheduler/manifests/yaml/deployment.yaml'
     - name: Show deployment manifest
       run: cat 'pkg/numaresourcesscheduler/manifests/yaml/deployment.yaml'
 
-    - name: Deploy RTE Operator
-      run: |
-        IMG=${built_image} KUSTOMIZE_DEPLOY_DIR="config/kind-ci/" make deploy
+    # - name: Deploy RTE Operator
+    #   run: |
+    #     IMG=${built_image} KUSTOMIZE_DEPLOY_DIR="config/kind-ci/" make deploy
 
-    - name: E2E Tests
-      run: |
-        export KUBECONFIG=${HOME}/.kube/config
-        NO_TEARDOWN=true make test-e2e
+    # - name: E2E Tests
+    #   run: |
+    #     export KUBECONFIG=${HOME}/.kube/config
+    #     NO_TEARDOWN=true make test-e2e
 
-    - name : Setup upterm session
-      uses: lhotari/action-upterm@v1
+    # - name : Setup upterm session
+    #   uses: lhotari/action-upterm@v1
 
-    - name: Export E2E Tests logs
-      if: ${{ failure() }}
-      run: |
-        mkdir -p ${LOG_DIR}
-        for pod in $(kubectl get pods -n $E2E_NAMESPACE_NAME --no-headers=true -o custom-columns=NAME:.metadata.name) 
-        do 
-          kubectl logs $pod -n $E2E_NAMESPACE_NAME --all-containers=true > ${LOG_DIR}/${pod}.log
-          kubectl describe pod $pod -n $E2E_NAMESPACE_NAME > ${LOG_DIR}/${pod}.describe.log
-        done
+    # - name: Export E2E Tests logs
+    #   if: ${{ failure() }}
+    #   run: |
+    #     mkdir -p ${LOG_DIR}
+    #     for pod in $(kubectl get pods -n $E2E_NAMESPACE_NAME --no-headers=true -o custom-columns=NAME:.metadata.name) 
+    #     do 
+    #       kubectl logs $pod -n $E2E_NAMESPACE_NAME --all-containers=true > ${LOG_DIR}/${pod}.log
+    #       kubectl describe pod $pod -n $E2E_NAMESPACE_NAME > ${LOG_DIR}/${pod}.describe.log
+    #     done
 
-    - name: Archive E2E Tests logs
-      if: ${{ failure() }}
-      uses: actions/upload-artifact@v2
-      with:
-        name: test_e2e_logs
-        path: ${LOG_DIR}/
+    # - name: Archive E2E Tests logs
+    #   if: ${{ failure() }}
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: test_e2e_logs
+    #     path: ${LOG_DIR}/
 
-    - name: Export kind logs
-      if: ${{ failure() }}
-      run: |
-        kind export logs /tmp/kind_logs
+    # - name: Export kind logs
+    #   if: ${{ failure() }}
+    #   run: |
+    #     kind export logs /tmp/kind_logs
 
-    - name: Archive kind logs
-      if: ${{ failure() }}
-      uses: actions/upload-artifact@v2
-      with:
-        name: kind_logs
-        path: /tmp/kind_logs
+    # - name: Archive kind logs
+    #   if: ${{ failure() }}
+    #   uses: actions/upload-artifact@v2
+    #   with:
+    #     name: kind_logs
+    #     path: /tmp/kind_logs
