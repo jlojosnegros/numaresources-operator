@@ -44,7 +44,8 @@ var _ = Describe("[Scheduler] install", func() {
 
 			dpl, errr := manifests.Deployment("")
 			Expect(errr).NotTo(HaveOccurred())
-			klog.Warningf("jlom: Containers %v", dpl.Spec.Template.Spec.Containers)
+			klog.Warningf("jlom: deployment %#v", dpl)
+			klog.Warningf("jlom: Containers %#v", dpl.Spec.Template.Spec.Containers)
 
 			var err error
 			nroSchedObj := objects.TestNROScheduler()
